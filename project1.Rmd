@@ -18,18 +18,93 @@ knitr::opts_chunk$set(echo = FALSE, cache = TRUE, message = FALSE, warning = FAL
 ```{r, echo = TRUE}
 library(knitr)
 library(tidyverse)
+library(httr)
+library(jsonlite)
 library(ggplot2)
 library(readr)
 library(DT)
 ```
 
-### Functions 
+## Functions to contact the NHL records API
 
-•	You should write functions to contact the NHL records API for the endpoints listed below. The functions should return well-formatted, parsed data (usually a data frame). Where possible, the user
-should have the option to specify the franchise of choice by both name and ID number - you’ll need to map the names to ID numbers yourself.
-–	/franchise (Returns id, firstSeasonId and lastSeasonId and name of every team in the history of the NHL)
-–	/franchise-team-totals (Returns Total stats for every franchise (ex roadTies, roadWins, etc))
-–	/site/api/franchise-season-records?cayenneExp=franchiseId=ID (Drill-down into season records for a specific franchise)
-–	/franchise-goalie-records?cayenneExp=franchiseId=ID (Goalie records for the specified franchise)
-–	/franchise-skater-records?cayenneExp=franchiseId=ID (Skater records, same interaction as goalie endpoint)
+The below functions return NHL records in well-formatted, parsed data frames, with options to specify the franchise of choice by both name and ID number.
+
+Our base URL is: https://records.nhl.com/site/api.
+
+```{r, echo = TRUE}
+baseURL <- "https://records.nhl.com/site/api/"
+```
+
+### Function returning id, firstSeasonId, lastSeasonId, and name of every team in the history of the NHL.
+```{r, echo = TRUE}
+franchise <- function() {
+  URL <- paste0(baseURL, 'franchise')
+  franchiseRAW <- RCurl::getURL(URL)
+  franchiseDF <- fromJSON(franchiseRAW, flatten=TRUE)
+  franchiseDF <- as_tibble(franchiseDF$data)
+  franchiseDF <- franchiseDF %>% select(id, firstSeasonId, lastSeasonId, fullName)
+  return(franchiseDF)
+}
+```
+
+### Function returning total stats for every franchise (ex: roadTies, roadWins, etc.)
+```{r, echo = TRUE}
+franchiseTeamTotals <- function() {
+  URL <- paste0(baseURL, 'franchise-team-totals')
+  franchiseTeamTotalsRAW <- RCurl::getURL(URL)
+  franchiseTeamTotalsDF <- fromJSON(franchiseTeamTotalsRAW, flatten=TRUE)
+  franchiseTeamTotalsDF <- as_tibble(franchiseTeamTotalsDF$data)
+  return(franchiseTeamTotalsDF)
+}
+```
+
+### Function returning season records for a specific franchise
+```{r, echo = TRUE}
+seasonRecords <- function(franchise, method = c('id', 'name')) {
+  if (method == 'name') {
+    franchise = select(filter(franchise(), fullName == franchise), id)$id
+  }
+  URL <- paste0(baseURL,
+                'franchise-season-records?cayenneExp=franchiseId=',
+                franchise)
+  seasonRecordsRAW <- RCurl::getURL(URL)
+  seasonRecordsDF <- fromJSON(seasonRecordsRAW, flatten=TRUE)
+  seasonRecordsDF <- as_tibble(seasonRecordsDF$data)
+  return(seasonRecordsDF)
+}
+```
+
+### Function returning season records for a specific franchise
+```{r, echo = TRUE}
+goalieRecords <- function(franchise, method = c('id', 'name')) {
+  if (method == 'name') {
+    franchise = select(filter(franchise(), fullName == franchise), id)$id
+  }
+  URL <- paste0(baseURL,
+                'franchise-goalie-records?cayenneExp=franchiseId=',
+                franchise)
+  goalieRecordsRAW <- RCurl::getURL(URL)
+  goalieRecordsDF <- fromJSON(goalieRecordsRAW, flatten=TRUE)
+  goalieRecordsDF <- as_tibble(goalieRecordsDF$data)
+  return(goalieRecordsDF)
+}
+```
+
+### Function returning skater records for a specific franchise
+```{r, echo = TRUE}
+skaterRecords <- function(franchise, method = c('id', 'name')) {
+  if (method == 'name') {
+    franchise = select(filter(franchise(), fullName == franchise), id)$id
+  }
+  URL <- paste0(baseURL,
+                'franchise-skater-records?cayenneExp=franchiseId=',
+                franchise)
+  skaterRecordsRAW <- RCurl::getURL(URL)
+  skaterRecordsDF <- fromJSON(skaterRecordsRAW, flatten=TRUE)
+  skaterRecordsDF <- as_tibble(skaterRecordsDF$data)
+  return(skaterRecordsDF)
+}
+```
+
+
 –	/site/api/franchise-detail?cayenneExp=mostRecentTeamId=ID (Admin history and retired num- bers)
