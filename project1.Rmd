@@ -8,4 +8,11 @@ output:
     toc_depth: 3
 ---
 
-Contents
+### Packages required to run code
+```{r}
+library(knitr)
+library(tidyverse)
+library(ggplot2)
+library(readr)
+library(DT)
+```
