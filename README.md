@@ -1,4 +1,4 @@
-## Welcome to GitHub Pagess
+## Welcome to GitHub Pagesss
 
 You can use the [editor on GitHub](https://github.com/nerminb/project1/edit/main/README.md) to maintain and preview the content for your website in Markdown files.
 
