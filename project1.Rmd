@@ -1,0 +1,11 @@
+---
+title: "Project 1"
+author: "Nermin Bibic"
+date: "6/20/2021"
+output:
+  github_document:
+    toc: yes
+    toc_depth: 3
+---
+
+Contents
