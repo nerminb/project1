@@ -21,6 +21,11 @@ Nermin Bibic
             franchise](#function-returning-season-records-for-a-specific-franchise-1)
         -   [Function returning skater records for a specific
             franchise](#function-returning-skater-records-for-a-specific-franchise)
+        -   [Function returning admininstration history and retired
+            numbers](#function-returning-admininstration-history-and-retired-numbers)
+    -   [Function to contact the NHL stats API for the
+        ?expand=team.stats
+        modifier.](#function-to-contact-the-nhl-stats-api-for-the-expandteamstats-modifier)
 
 # Reading and Summarizing data from the National Hockey League’s (NHL) API
 
@@ -42,21 +47,26 @@ The below functions return NHL records in well-formatted, parsed data
 frames, with options to specify the franchise of choice by both name and
 ID number.
 
-Our base URL is: <https://records.nhl.com/site/api>.
+Our base URLs is: <https://records.nhl.com/site/api>.
 
 ``` r
-baseURL <- "https://records.nhl.com/site/api/"
+baseURLRecords <- "https://records.nhl.com/site/api/"
+baseURLStats <- "https://statsapi.web.nhl.com/api/v1/teams"
 ```
 
 ### Function returning id, firstSeasonId, lastSeasonId, and name of every team in the history of the NHL.
 
 ``` r
 franchise <- function() {
-  URL <- paste0(baseURL, 'franchise')
+  URL <- paste0(baseURLRecords, 'franchise')
   franchiseRAW <- RCurl::getURL(URL)
   franchiseDF <- fromJSON(franchiseRAW, flatten=TRUE)
   franchiseDF <- as_tibble(franchiseDF$data)
-  franchiseDF <- franchiseDF %>% select(id, firstSeasonId, lastSeasonId, fullName)
+  franchiseDF <- franchiseDF %>% select(id,
+                                        mostRecentTeamId,
+                                        fullName,
+                                        firstSeasonId,
+                                        lastSeasonId)
   return(franchiseDF)
 }
 ```
@@ -65,7 +75,7 @@ franchise <- function() {
 
 ``` r
 franchiseTeamTotals <- function() {
-  URL <- paste0(baseURL, 'franchise-team-totals')
+  URL <- paste0(baseURLRecords, 'franchise-team-totals')
   franchiseTeamTotalsRAW <- RCurl::getURL(URL)
   franchiseTeamTotalsDF <- fromJSON(franchiseTeamTotalsRAW, flatten=TRUE)
   franchiseTeamTotalsDF <- as_tibble(franchiseTeamTotalsDF$data)
@@ -76,13 +86,13 @@ franchiseTeamTotals <- function() {
 ### Function returning season records for a specific franchise
 
 ``` r
-seasonRecords <- function(franchise, method = c('id', 'name')) {
-  if (method == 'name') {
-    franchise = select(filter(franchise(), fullName == franchise), id)$id
+seasonRecords <- function(team, method = c('franchise_id', 'team_id', 'team_name')) {
+  if (method == 'team_id') {
+    team = select(filter(franchise(), mostRecentTeamId == team), id)$id
+  } else if (method == 'team_name') {
+    team = select(filter(franchise(), fullName == team), id)$id
   }
-  URL <- paste0(baseURL,
-                'franchise-season-records?cayenneExp=franchiseId=',
-                franchise)
+  URL <- paste0(baseURLRecords, 'franchise-season-records?cayenneExp=franchiseId=', team)
   seasonRecordsRAW <- RCurl::getURL(URL)
   seasonRecordsDF <- fromJSON(seasonRecordsRAW, flatten=TRUE)
   seasonRecordsDF <- as_tibble(seasonRecordsDF$data)
@@ -93,13 +103,13 @@ seasonRecords <- function(franchise, method = c('id', 'name')) {
 ### Function returning season records for a specific franchise
 
 ``` r
-goalieRecords <- function(franchise, method = c('id', 'name')) {
-  if (method == 'name') {
-    franchise = select(filter(franchise(), fullName == franchise), id)$id
+goalieRecords <- function(team, method = c('franchise_id', 'team_id', 'team_name')) {
+  if (method == 'team_id') {
+    team = select(filter(franchise(), mostRecentTeamId == team), id)$id
+  } else if (method == 'team_name') {
+    team = select(filter(franchise(), fullName == team), id)$id
   }
-  URL <- paste0(baseURL,
-                'franchise-goalie-records?cayenneExp=franchiseId=',
-                franchise)
+  URL <- paste0(baseURLRecords, 'franchise-goalie-records?cayenneExp=franchiseId=', team)
   goalieRecordsRAW <- RCurl::getURL(URL)
   goalieRecordsDF <- fromJSON(goalieRecordsRAW, flatten=TRUE)
   goalieRecordsDF <- as_tibble(goalieRecordsDF$data)
@@ -110,13 +120,13 @@ goalieRecords <- function(franchise, method = c('id', 'name')) {
 ### Function returning skater records for a specific franchise
 
 ``` r
-skaterRecords <- function(franchise, method = c('id', 'name')) {
-  if (method == 'name') {
-    franchise = select(filter(franchise(), fullName == franchise), id)$id
+skaterRecords <- function(team, method = c('franchise_id', 'team_id', 'team_name')) {
+  if (method == 'team_id') {
+    team = select(filter(franchise(), mostRecentTeamId == team), id)$id
+  } else if (method == 'team_name') {
+    team = select(filter(franchise(), fullName == team), id)$id
   }
-  URL <- paste0(baseURL,
-                'franchise-skater-records?cayenneExp=franchiseId=',
-                franchise)
+  URL <- paste0(baseURLRecords, 'franchise-skater-records?cayenneExp=franchiseId=', team)
   skaterRecordsRAW <- RCurl::getURL(URL)
   skaterRecordsDF <- fromJSON(skaterRecordsRAW, flatten=TRUE)
   skaterRecordsDF <- as_tibble(skaterRecordsDF$data)
@@ -124,5 +134,97 @@ skaterRecords <- function(franchise, method = c('id', 'name')) {
 }
 ```
 
-– /site/api/franchise-detail?cayenneExp=mostRecentTeamId=ID (Admin
-history and retired num- bers)
+### Function returning admininstration history and retired numbers
+
+``` r
+adminHistory <- function(team, method = c('franchise_id', 'team_id', 'team_name')) {
+  if (method == 'franchise_id') {
+    team = select(filter(franchise(), id == team), mostRecentTeamId)$mostRecentTeamId
+  } else if (method == 'team_name') {
+    team = select(filter(franchise(), fullName == team), mostRecentTeamId)$mostRecentTeamId
+  }
+  URL <- paste0(baseURLRecords, 'franchise-detail?cayenneExp=mostRecentTeamId=', team)
+  adminHistoryRAW <- RCurl::getURL(URL)
+  adminHistoryDF <- fromJSON(adminHistoryRAW, flatten=TRUE)
+  adminHistoryDF <- as_tibble(adminHistoryDF$data)
+  return(adminHistoryDF)
+}
+```
+
+## Function to contact the NHL stats API for the ?expand=team.stats modifier.
+
+This function returns team stats. If no team is specified (by running
+the function as “teamStats()”), this function returns stats for all
+teams. If a team is specified, either by francise ID, team ID, or team
+name, this function returns a single row of stats data. The stats data
+contain both raw values for each data point as well as ranks for the
+data points.
+
+``` r
+teamStats <- function(team, method = c('franchise_id', 'team_id', 'team_name')) {
+  
+  if (missing(team)) {
+    
+    URL <- paste0(baseURLStats, '?expand=team.stats')
+    teamStatsRAW <- RCurl::getURL(URL)
+    teamStatsDF <- fromJSON(teamStatsRAW, flatten=TRUE)
+    teamStatsList <- teamStatsDF$teams$teamStats
+    # Remove NULL objects
+    teamStatsList <- teamStatsList[-which(sapply(teamStatsList, is.null))]
+    # Initialize empty list, to be filled with single-row tibbles
+    allTeamsStats <- list()
+    for (i in teamStatsList) {
+      teamStatsSplits <- as_tibble(as.data.frame(i$splits))
+      # Split raw value and rank data
+      teamStatsValues <- teamStatsSplits[1, ]
+      teamStatsRanks <- select(teamStatsSplits[2, ], -c('team.id', 'team.name', 'team.link'))
+      # Clean up column names; remove prefix
+      colnames(teamStatsValues) <- gsub("stat.", "", colnames(teamStatsValues))
+      colnames(teamStatsRanks) <- gsub("Rank", "", colnames(teamStatsRanks))
+      colnames(teamStatsRanks) <- gsub("stat.", "", colnames(teamStatsRanks))
+      # Distinguish rank data
+      colnames(teamStatsRanks) <- paste0(colnames(teamStatsRanks), 'Rank')
+      # Drop NA columns
+      teamStatsValues <- teamStatsValues[, colSums(is.na(teamStatsValues)) != nrow(teamStatsValues)]
+      teamStatsRanks <- teamStatsRanks[, colSums(is.na(teamStatsRanks)) != nrow(teamStatsRanks)]
+      # Combine values and ranks into one row
+      teamStatsBind <- as_tibble(cbind(teamStatsValues, teamStatsRanks))
+      allTeamsStats[[length(allTeamsStats) + 1]] <- teamStatsBind
+    }
+    # combine all tibbles in resulting list into one tibble
+    allTeamsStats <- bind_rows(allTeamsStats)
+    return(allTeamsStats)
+
+  } else {
+    
+    if (method == 'franchise_id') {
+      team = select(filter(franchise(), id == team), mostRecentTeamId)$mostRecentTeamId
+    } else if (method == 'team_name') {
+      team = select(filter(franchise(), fullName == team), mostRecentTeamId)$mostRecentTeamId
+    }
+    URL <- paste0(baseURLStats, '/', team, '?expand=team.stats')
+    teamStatsRAW <- RCurl::getURL(URL)
+    teamStatsDF <- fromJSON(teamStatsRAW, flatten=TRUE)
+    # Choose 'teamStats' object in JSON
+    teamStatsDF <- as_tibble(teamStatsDF$teams$teamStats[[1]], .name_repair = 'minimal')
+    teamStatsSplits <- as_tibble(as.data.frame(teamStatsDF$splits))
+    # Split raw value and rank data
+    teamStatsValues <- teamStatsSplits[1, ]
+    teamStatsRanks <- select(teamStatsSplits[2, ], -c('team.id', 'team.name', 'team.link'))
+    # Clean up column names; remove prefix
+    colnames(teamStatsValues) <- gsub("stat.", "", colnames(teamStatsValues))
+    colnames(teamStatsRanks) <- gsub("Rank", "", colnames(teamStatsRanks))
+    colnames(teamStatsRanks) <- gsub("stat.", "", colnames(teamStatsRanks))
+    # Distinguish rank data
+    colnames(teamStatsRanks) <- paste0(colnames(teamStatsRanks), 'Rank')
+    # Drop NA columns
+    teamStatsValues <- teamStatsValues[, colSums(is.na(teamStatsValues)) != nrow(teamStatsValues)]
+    teamStatsRanks <- teamStatsRanks[, colSums(is.na(teamStatsRanks)) != nrow(teamStatsRanks)]
+    # Combine values and ranks into one row
+    teamStatsBind <- as_tibble(cbind(teamStatsValues, teamStatsRanks))
+    return(teamStatsBind)
+    
+  }
+  
+}
+```
