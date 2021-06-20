@@ -26,6 +26,7 @@ Nermin Bibic
     -   [Function to contact the NHL stats API for the
         ?expand=team.stats
         modifier.](#function-to-contact-the-nhl-stats-api-for-the-expandteamstats-modifier)
+    -   [Wrapper function](#wrapper-function)
 
 # Reading and Summarizing data from the National Hockey League’s (NHL) API
 
@@ -57,7 +58,7 @@ baseURLStats <- "https://statsapi.web.nhl.com/api/v1/teams"
 ### Function returning id, firstSeasonId, lastSeasonId, and name of every team in the history of the NHL.
 
 ``` r
-franchise <- function() {
+franchises <- function() {
   URL <- paste0(baseURLRecords, 'franchise')
   franchiseRAW <- RCurl::getURL(URL)
   franchiseDF <- fromJSON(franchiseRAW, flatten=TRUE)
@@ -87,10 +88,16 @@ franchiseTeamTotals <- function() {
 
 ``` r
 seasonRecords <- function(team, method = c('franchise_id', 'team_id', 'team_name')) {
+  if(missing(team)) {
+    stop('Please specify team')
+  }
+  if(missing(method)) {
+    stop('Please specify method. Acceptable methods:\n\nfranchise_id\nteam_id\nteam_name')
+  }
   if (method == 'team_id') {
-    team = select(filter(franchise(), mostRecentTeamId == team), id)$id
+    team = select(filter(franchises(), mostRecentTeamId == team), id)$id
   } else if (method == 'team_name') {
-    team = select(filter(franchise(), fullName == team), id)$id
+    team = select(filter(franchises(), fullName == team), id)$id
   }
   URL <- paste0(baseURLRecords, 'franchise-season-records?cayenneExp=franchiseId=', team)
   seasonRecordsRAW <- RCurl::getURL(URL)
@@ -104,10 +111,16 @@ seasonRecords <- function(team, method = c('franchise_id', 'team_id', 'team_name
 
 ``` r
 goalieRecords <- function(team, method = c('franchise_id', 'team_id', 'team_name')) {
+  if(missing(team)) {
+    stop('Please specify team')
+  }
+  if(missing(method)) {
+    stop('Please specify method. Acceptable methods:\n\nfranchise_id\nteam_id\nteam_name')
+  }
   if (method == 'team_id') {
-    team = select(filter(franchise(), mostRecentTeamId == team), id)$id
+    team = select(filter(franchises(), mostRecentTeamId == team), id)$id
   } else if (method == 'team_name') {
-    team = select(filter(franchise(), fullName == team), id)$id
+    team = select(filter(franchises(), fullName == team), id)$id
   }
   URL <- paste0(baseURLRecords, 'franchise-goalie-records?cayenneExp=franchiseId=', team)
   goalieRecordsRAW <- RCurl::getURL(URL)
@@ -121,10 +134,16 @@ goalieRecords <- function(team, method = c('franchise_id', 'team_id', 'team_name
 
 ``` r
 skaterRecords <- function(team, method = c('franchise_id', 'team_id', 'team_name')) {
+  if(missing(team)) {
+    stop('Please specify team')
+  }
+  if(missing(method)) {
+    stop('Please specify method. Acceptable methods:\n\nfranchise_id\nteam_id\nteam_name')
+  }
   if (method == 'team_id') {
-    team = select(filter(franchise(), mostRecentTeamId == team), id)$id
+    team = select(filter(franchises(), mostRecentTeamId == team), id)$id
   } else if (method == 'team_name') {
-    team = select(filter(franchise(), fullName == team), id)$id
+    team = select(filter(franchises(), fullName == team), id)$id
   }
   URL <- paste0(baseURLRecords, 'franchise-skater-records?cayenneExp=franchiseId=', team)
   skaterRecordsRAW <- RCurl::getURL(URL)
@@ -138,10 +157,16 @@ skaterRecords <- function(team, method = c('franchise_id', 'team_id', 'team_name
 
 ``` r
 adminHistory <- function(team, method = c('franchise_id', 'team_id', 'team_name')) {
+  if(missing(team)) {
+    stop('Please specify team')
+  }
+  if(missing(method)) {
+    stop('Please specify method. Acceptable methods:\n\nfranchise_id\nteam_id\nteam_name')
+  }
   if (method == 'franchise_id') {
-    team = select(filter(franchise(), id == team), mostRecentTeamId)$mostRecentTeamId
+    team = select(filter(franchises(), id == team), mostRecentTeamId)$mostRecentTeamId
   } else if (method == 'team_name') {
-    team = select(filter(franchise(), fullName == team), mostRecentTeamId)$mostRecentTeamId
+    team = select(filter(franchises(), fullName == team), mostRecentTeamId)$mostRecentTeamId
   }
   URL <- paste0(baseURLRecords, 'franchise-detail?cayenneExp=mostRecentTeamId=', team)
   adminHistoryRAW <- RCurl::getURL(URL)
@@ -197,10 +222,16 @@ teamStats <- function(team, method = c('franchise_id', 'team_id', 'team_name')) 
 
   } else {
     
+    if(missing(team)) {
+      stop('Please specify team')
+    }
+    if(missing(method)) {
+      stop('Please specify method. Acceptable methods:\n\nfranchise_id\nteam_id\nteam_name')
+    }
     if (method == 'franchise_id') {
-      team = select(filter(franchise(), id == team), mostRecentTeamId)$mostRecentTeamId
+      team = select(filter(franchises(), id == team), mostRecentTeamId)$mostRecentTeamId
     } else if (method == 'team_name') {
-      team = select(filter(franchise(), fullName == team), mostRecentTeamId)$mostRecentTeamId
+      team = select(filter(franchises(), fullName == team), mostRecentTeamId)$mostRecentTeamId
     }
     URL <- paste0(baseURLStats, '/', team, '?expand=team.stats')
     teamStatsRAW <- RCurl::getURL(URL)
@@ -228,3 +259,10 @@ teamStats <- function(team, method = c('franchise_id', 'team_id', 'team_name')) 
   
 }
 ```
+
+## Wrapper function
+
+This wrapper function is a one-stop-shop for the user to access any of
+the API endpoints above. This function simply calls the appropriate
+endpoint as per the users request, including any modifiers, team IDs,
+etc.
