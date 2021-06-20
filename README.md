@@ -26,7 +26,7 @@ Nermin Bibic
     -   [Function to contact the NHL stats API for the
         ?expand=team.stats
         modifier.](#function-to-contact-the-nhl-stats-api-for-the-expandteamstats-modifier)
-    -   [Wrapper function](#wrapper-function)
+    -   [NHL Data Wrapper function](#nhl-data-wrapper-function)
     -   [Exploratory Data Analysis](#exploratory-data-analysis)
         -   [Contingency Tables](#contingency-tables)
         -   [Numerical Summaries of Outfield Player Performance
@@ -57,16 +57,16 @@ library(DT)
 
 ## Functions to contact the NHL records API
 
-The below functions return NHL records in well-formatted, parsed data
-frames, with options to specify the franchise of choice by both name and
-ID number.
-
-Our base URLs is: <https://records.nhl.com/site/api>.
+API Sources:
 
 ``` r
 baseURLRecords <- "https://records.nhl.com/site/api/"
 baseURLStats <- "https://statsapi.web.nhl.com/api/v1/teams"
 ```
+
+The below functions return NHL records in well-formatted, parsed data
+frames, with options to specify the franchise of choice by both name and
+ID number.
 
 ### Function returning id, firstSeasonId, lastSeasonId, and name of every team in the history of the NHL.
 
@@ -193,7 +193,7 @@ adminHistory <- function(team, method = c('franchise_id', 'team_id', 'team_name'
 
 This function returns team stats. If no team is specified (by running
 the function as “teamStats()”), this function returns stats for all
-teams. If a team is specified, either by francise ID, team ID, or team
+teams. If a team is specified, either by franchise ID, team ID, or team
 name, this function returns a single row of stats data. The stats data
 contain both raw values for each data point as well as ranks for the
 data points.
@@ -273,7 +273,7 @@ teamStats <- function(team, method = c('franchise_id', 'team_id', 'team_name')) 
 }
 ```
 
-## Wrapper function
+## NHL Data Wrapper function
 
 This wrapper function is a one-stop-shop for the user to access any of
 the API endpoints above. This function simply calls the appropriate
@@ -299,9 +299,12 @@ NHLData <- function(target_data = c('franchises', 'team_totals', 'season_records
 
 ## Exploratory Data Analysis
 
+I chose New York Rangers player data for exploratory data analysis. In
+this step, I am using the wrapper function to call NHL player data.
+
 ``` r
-rangersSkaterRecords <- skaterRecords(3, 'team_id')
-rangersGoalieRecords <- goalieRecords(3, 'team_id')
+rangersSkaterRecords <- NHLData('skater_records', 3, 'team_id')
+rangersGoalieRecords <- NHLData('goalie_records', 3, 'team_id')
 # Combine skaters and goalies regardless of different sets of columns
 rangersPlayerRecords <- bind_rows(rangersSkaterRecords, rangersGoalieRecords)
 ```
@@ -310,6 +313,8 @@ rangersPlayerRecords <- bind_rows(rangersSkaterRecords, rangersGoalieRecords)
 
 Here is a two-way contingency table between position and games played
 showing the frequency of each category.
+
+explain
 
 ``` r
 rangersPlayerRecords$gamesPlayedRange <- cut(rangersPlayerRecords$gamesPlayed,
@@ -345,6 +350,8 @@ form this three-dimensional array. First we are showing a two-way
 contingency table between position and games played for inactive
 players, and then a two-way contingency table between position and games
 played for active players.
+
+explain
 
 ``` r
 threeWayTab <- table(rangersPlayerRecords$position,
@@ -383,6 +390,8 @@ goal/assist per game proficiency is more accurate (a player who played 1
 game and scored 1 goal would have a rate of 1 goal/assist per game and
 would appear to be the most proficient scorer; for this reason I am
 dropping players who didn’t play many games).
+
+explain
 
 ``` r
 rangersPlayerRecords$goalOrAssistPerGame <- (rangersPlayerRecords$goals +
@@ -607,5 +616,3 @@ g + geom_boxplot() +
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
-
-One more plot?
