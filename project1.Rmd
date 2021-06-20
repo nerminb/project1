@@ -353,7 +353,7 @@ Looking at the mean and medians for the above summary data, it appears skaters o
 ### Barplot of Goals or Assists Per Game Range
 Each of the below bar graphs show counts based on two variables. These bar graphs are side-by-side bar plots, allowing us to compare counts between more than one factor.
 
-<explain>
+explain
 ```{r, echo = TRUE}
 g <- ggplot(rangersPlayerRecords, aes(x = GAPerGameRange))
 g + geom_bar(aes(fill = position), position = "dodge") +
@@ -362,7 +362,7 @@ g + geom_bar(aes(fill = position), position = "dodge") +
 ```
 
 ### Kernel Smoother Histogram for Goals or Assists Per Game
-<explain>
+explain
 
 ```{r, echo = TRUE}
 g <- ggplot(rangersPlayerRecords, aes(x = goalOrAssistPerGame))

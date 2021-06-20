@@ -515,7 +515,7 @@ Each of the below bar graphs show counts based on two variables. These
 bar graphs are side-by-side bar plots, allowing us to compare counts
 between more than one factor.
 
-<explain>
+explain
 
 ``` r
 g <- ggplot(rangersPlayerRecords, aes(x = GAPerGameRange))
@@ -528,7 +528,7 @@ g + geom_bar(aes(fill = position), position = "dodge") +
 
 ### Kernel Smoother Histogram for Goals or Assists Per Game
 
-<explain>
+explain
 
 ``` r
 g <- ggplot(rangersPlayerRecords, aes(x = goalOrAssistPerGame))
