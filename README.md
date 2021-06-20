@@ -314,7 +314,9 @@ rangersPlayerRecords <- bind_rows(rangersSkaterRecords, rangersGoalieRecords)
 Here is a two-way contingency table between position and games played
 showing the frequency of each category.
 
-explain
+A great majority of players regardless of position that have played for
+the New York Rangers played less than 100 games. Very few players played
+over 300 games.
 
 ``` r
 rangersPlayerRecords$gamesPlayedRange <- cut(rangersPlayerRecords$gamesPlayed,
@@ -351,7 +353,10 @@ contingency table between position and games played for inactive
 players, and then a two-way contingency table between position and games
 played for active players.
 
-explain
+When compared to the contingency table for inactive players, the number
+of active defenders that played over 100 games is larger than the number
+that played under 100 games. This indicates the current New York Rangers
+team has a more experienced defense than usual.
 
 ``` r
 threeWayTab <- table(rangersPlayerRecords$position,
@@ -391,7 +396,9 @@ game and scored 1 goal would have a rate of 1 goal/assist per game and
 would appear to be the most proficient scorer; for this reason I am
 dropping players who didn’t play many games).
 
-explain
+Defenders have a much lower attacking contribution rate (goals or
+assists per game) in contrast to wingers and centers. The rate among
+either of the left or right wingers and centers are very similar.
 
 ``` r
 rangersPlayerRecords$goalOrAssistPerGame <- (rangersPlayerRecords$goals +
@@ -524,7 +531,14 @@ Each of the below bar graphs show counts based on two variables. These
 bar graphs are side-by-side bar plots, allowing us to compare counts
 between more than one factor.
 
-explain
+The bars for non-defenders are fairly symmetrical for the range of 0 to
+1 goals/assists per game, while for defenders it is clearly
+right-skewed. Centers seem to still hold well in the 0.8-1 goal/assist
+per game range unlike the wingers; there are almost as many centers in
+this range as there are centers in the 0.6-0.8 range. This indicates
+centers are probably the main weapon of attack in hockey, as they seem
+most prolific in making goals happen either directly or indirectly
+(assists).
 
 ``` r
 g <- ggplot(rangersPlayerRecords, aes(x = GAPerGameRange))
@@ -537,7 +551,14 @@ g + geom_bar(aes(fill = position), position = "dodge") +
 
 ### Kernel Smoother Histogram for Goals or Assists Per Game
 
-explain
+Centers and right wingers have very similar shapes of distributions and
+are the most symmetrical compared to the other positions. The
+distribution for defenders is clearly right skewed. There is a slight
+right skew in the distribution for left wingers, although their data
+still indicate they are closest to centers and right wingers in
+scoring/assisting. One could expect the average center or winger to
+score or assist \~0.5 goals per game, or take 2 games to score or assist
+one goal.
 
 ``` r
 g <- ggplot(rangersPlayerRecords, aes(x = goalOrAssistPerGame))
