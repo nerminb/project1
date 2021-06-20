@@ -233,7 +233,7 @@ teamStats <- function(team, method = c('franchise_id', 'team_id', 'team_name')) 
 ## Wrapper function
 This wrapper function is a one-stop-shop for the user to access any of the API endpoints above. This function simply calls the appropriate endpoint as per the users request, including any modifiers, team IDs, etc.
 
-```{r}
+```{r, echo = TRUE}
 NHLData <- function(target_data = c('franchises', 'team_totals', 'season_records',
                                     'goalie_records', 'skater_records',
                                     'admin_history', 'team_stats'),...) {

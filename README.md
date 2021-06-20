@@ -266,3 +266,20 @@ This wrapper function is a one-stop-shop for the user to access any of
 the API endpoints above. This function simply calls the appropriate
 endpoint as per the users request, including any modifiers, team IDs,
 etc.
+
+``` r
+NHLData <- function(target_data = c('franchises', 'team_totals', 'season_records',
+                                    'goalie_records', 'skater_records',
+                                    'admin_history', 'team_stats'),...) {
+  switch(target_data,
+           franchises = franchises(),
+           team_totals = franchiseTeamTotals(),
+           season_records = seasonRecords(...),
+           goalie_records = goalieRecords(...),
+           skater_records = skaterRecords(...),
+           admin_history = adminHistory(...),
+           team_stats = teamStats(...),
+           stop("Invalid argument. Acceptable target_data:\n\nfranchises\nteam_totals\nseason_records\ngoalie_records\nskater_records\nadmin_history\nteam_stats")
+  )
+}
+```
